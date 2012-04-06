@@ -9,9 +9,6 @@ require_relative 'csv2db_inserters.rb'
 
 COLUMNS = %w(id csv_filename csv_num reporter performer performer_bureau home_pref home_city home_minor sold memo category item_name item_name_minor inspector inspect_method on_gather_raw on_result_raw on_publish_raw i131_raw i131_nd i131 cs134_raw cs134_nd cs134 cs137_raw cs137_nd cs137 cs_total_raw cs_total_nd cs_total)
 
-def create_stmt
-end
-
 DBCONFIG_FILENAME = "/home/autch/.foodrad.json"
 db_cfg = YAML.load_file(DBCONFIG_FILENAME)
 
