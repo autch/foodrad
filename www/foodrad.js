@@ -95,6 +95,7 @@ function on_submit() {
 
 	if(result == null || result.length == 0) {
 	    jQuery("<li>").text("見つかりませんでした").appendTo(ul);
+	    jQuery.mobile.changePage(jQuery('#resultPage'));
 	    jQuery('ul.dynamic-list').listview('refresh');
 	    jQuery.mobile.hidePageLoadingMsg();
 	    return;
