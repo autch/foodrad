@@ -1,0 +1,253 @@
+<!DOCTYPE html> 
+<html> 
+  <head> 
+    <title>食品の放射能データ検索もどき（実験）</title> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1"> 
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.0-rc.1/jquery.mobile-1.1.0-rc.1.min.css" />
+    <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.1.0-rc.1/jquery.mobile-1.1.0-rc.1.min.js"></script>
+    <script type="text/javascript">
+
+// { カテゴリ: [品名, 品名, ...] }
+var categories = {
+};
+var load_ok = [];
+
+function check_done_loading(sym) {
+    load_ok.push(sym);
+
+    if(load_ok.length >= 2) {
+	jQuery.mobile.hidePageLoadingMsg();
+	jQuery('#submit').removeProp("disabled");
+    }
+}
+
+function get_area() {
+    jQuery.getJSON('prefectures.php?callback=?', function(results){ 
+	var sel = jQuery('#select-area');
+	sel.empty();
+	sel.append(jQuery("<option>").text("すべて").val(""));
+	for(var i = 0; i < results.length; i++) {
+	    var item = results[i];
+
+	    var opt = jQuery("<option>");
+	    var caption = item['home_pref'];
+	    if(caption == null) caption = "（不明）"
+	    opt.text(caption + " (" + item['count'] + ")").val(item['home_pref']);
+	    sel.append(opt);
+	}
+	sel.trigger("create");
+	check_done_loading("area");
+    });
+}
+
+function get_categories() {
+    jQuery.getJSON('categories.php?callback=?', function(result) {
+	categories = result;
+	var sel = jQuery('#select-category');
+	sel.empty();
+	sel.append(jQuery("<option>").text("すべて").val(""));
+	for(var key in categories) {
+	    var item = categories[key];
+	    var opt = jQuery("<option>");
+	    var caption = key + " (" + item['count'] + ")";
+		
+	    opt.text(caption).val(key);
+	    sel.append(opt);
+	}
+	sel.trigger("create");
+	check_done_loading("category");
+    });
+}
+
+function onchange_category(cat_name) {
+    jQuery('#category').val(cat_name);
+
+    var sel = jQuery('#select-name');
+    var cat = categories[cat_name]['items'];
+
+    sel.empty();
+    sel.append(jQuery("<option>").text("すべて").val(""));
+    for(var i = 0; i < cat.length; i++) {
+	var opt = jQuery("<option>");
+	
+	opt.text(cat[i]).val(cat[i]);
+	sel.append(opt);
+    }
+    sel.trigger("create");
+}
+
+function rad_label(item, key) {
+    if(item[key] == null) {
+	return "-";
+    }
+    if(item[key + "_nd"] != 0) {
+	return "< " + item[key];
+    }
+    return item[key];
+}
+
+function on_submit() {
+    var ul = jQuery("#result");
+    ul.empty();
+
+    jQuery.mobile.showPageLoadingMsg();
+
+    jQuery.getJSON('search.php?callback=?', {
+	home_pref: jQuery('#area').val(),
+	category: jQuery('#category').val(),
+	item_name: jQuery('#name').val(),
+	cs_total: jQuery('#Cs').val()
+    }, function(result) {
+	var ul = jQuery("#result");
+	ul.empty();
+
+	if(result == null || result.length == 0) {
+	    jQuery("<li>").text("見つかりませんでした").appendTo(ul);
+	    jQuery('ul.dynamic-list').listview('refresh');
+	    jQuery.mobile.hidePageLoadingMsg();
+	    return;
+	}
+
+	for(var i in result) {
+	    var item = result[i];
+	    var li = jQuery("<li>");
+	    var anchor = jQuery("<a>");
+
+	    var title = jQuery("<h3>").text(item['item_name'] + " ").append(jQuery("<small>").text(item['category']));
+	    var p1 = jQuery("<p>").text("Cs: " + rad_label(item, 'cs_total') + " Bq/kg"),
+	    p2 = jQuery("<p>").text("Cs134: " + rad_label(item, 'cs134') + " Bq/kg, " +
+				    "Cs137: " + rad_label(item, 'cs137') + " Bq/kg");
+
+	    anchor.append(title).append(p1).append(p2);
+
+	    jQuery.data(anchor, "item", item);
+	    
+	    anchor.attr("href", "#detailPage").attr("data-rel", "dialog");
+	    anchor.click(item, function(event) {
+		showDetail(event);
+	    });
+
+	    li.append(anchor);
+	    ul.append(li);
+	}
+	jQuery('ul.dynamic-list').listview('refresh');
+	jQuery.mobile.hidePageLoadingMsg();
+    });
+}
+
+function showDetail(event) {
+    var data = event.data;
+    for(var key in data) {
+	var td = jQuery("#detail-" + key);
+	if(td && td.length > 0) {
+	    td.text(data[key]);
+	}
+    }
+}
+
+    </script>
+    <style>
+    th { text-align: left; }
+</style>
+  </head> 
+  <body> 
+    <div id="mainPage" data-role="page">
+      <div data-role="header">
+	<h1>食品の放射能データ検索もどき（実験）</h1>
+      </div><!-- /header -->
+
+      <div data-role="content">	
+
+	<p>元ネタは <a href="http://oku.edu.mie-u.ac.jp/food/">食品の放射能データ検索もどき（実験）</a></p>
+	<p><a href="http://oku.edu.mie-u.ac.jp/~okumura/stat/data/mhlw/">http://oku.edu.mie-u.ac.jp/~okumura/stat/data/mhlw/</a> から a357～a359.csv を結合したものを使っています。</p>
+
+	  <fieldset>
+	    <legend>検索条件</legend>
+	    <div data-role="fieldcontain">
+	      <label for="area" class="ui-hidden-accessible">都道府県</label>
+              <input id="area" name="area" size="20" value="" placeholder="都道府県" />
+	      <select name="select-area" id="select-area" onchange="$('#area').val($(this).val())">
+		<option value="">すべて</option>
+	      </select>
+	    </div>
+	    <div data-role="fieldcontain">
+	      <label for="category" class="ui-hidden-accessible">食品カテゴリ</label>
+              <input id="category" name="category" size="20" value="" placeholder="食品カテゴリ" />
+	      <select name="select-category" id="select-category" onchange="onchange_category($(this).val())">
+		<option value="">すべて</option>
+	      </select>
+	    </div>
+	    <div data-role="fieldcontain">
+	      <label for="name" class="ui-hidden-accessible">品目</label>
+	      <input id="name" name="name" size="20" value="" placeholder="品目" />
+	      <select name="select-name" id="select-name" onchange="$('#name').val($(this).val())">
+		<option value="">すべて</option>
+	      </select>
+	    </div>
+            <input type="hidden" id="I131" name="I131" value="0"/>
+	    <div data-role="fieldcontain">
+	      <label for="Cs">Cs-134+137 <input id="Cs" name="Cs" size="5" value="100" /> Bq/kg 以上</label>
+	    </div>
+	  </fieldset>
+	  <a href="#resultPage" data-role="button" id="submit" onclick="on_submit()">検索</a>
+	
+      </div><!-- /content -->
+    </div><!-- /page -->
+
+
+    <div id="resultPage" data-role="page">
+      <div data-role="header">
+	<a href="#mainPage" data-icon="back" data-direction="reverse" class="ui-btn-left jqm-back">戻る</a>
+	<h1>食品の放射能データ検索もどき（実験）</h1>
+      </div><!-- /header -->
+
+      <div data-role="content">	
+	<ul data-role="listview" class="dynamic-list" id="result">
+	</ul>
+      </div>
+    </div>
+
+    <div id="detailPage" data-role="page">
+      <div data-role="header">
+	<!--a href="#resultPage" data-icon="back" data-direction="reverse" class="ui-btn-left jqm-back">戻る</a-->
+	<h1>検索結果詳細</h1>
+      </div><!-- /header -->
+
+      <div data-role="content">
+	<table>
+	  <tr><th scope="row">ファイル名</th><td id="detail-csv_filename"></td></tr>
+	  <tr><th scope="row">No</th><td id="detail-csv_num"></td></tr>
+	  <tr><th scope="row">報告自治体</th><td id="detail-reporter"></td></tr>
+	  <tr><th scope="row">実施主体</th><td id="detail-performer"></td></tr>
+	  <tr><th scope="row">産地 都道府県</th><td id="detail-home_pref"></td></tr>
+	  <tr><th scope="row">産地 市町村</th><td id="detail-home_city"></td></tr>
+	  <tr><th scope="row">非流通品/流通品</th><td id="detail-sold"></td></tr>
+	  <tr><th scope="row">食品カテゴリ</th><td id="detail-category"></td></tr>
+	  <tr><th scope="row">品目</th><td id="detail-item_name"></td></tr>
+	  <tr><th scope="row">品目委細</th><td id="detail-item_name_minor"></td></tr>
+	  <tr><th scope="row">検査機関</th><td id="detail-inspector"></td></tr>
+	  <tr><th scope="row">検査法 [Ge/NaI]</th><td id="detail-inspect_method"></td><tr>
+	  <tr><th scope="row">採取日/購入日</th><td id="detail-on_gather_raw"></td></tr>
+	  <tr><th scope="row">結果判明日</th><td id="detail-on_result_raw"></td></tr>
+	  <tr><th scope="row">Cs134 [Bq/kg]</th><td id="detail-cs134_raw"></td></tr>
+	  <tr><th scope="row">Cs137 [Bq/kg]</th><td id="detail-cs137_raw"></td></tr>
+	  <tr><th scope="row">総 Cs [Bq/kg]</th><td id="detail-cs_total_raw"></td></tr>
+	</table>
+	<a href="#resultPage" data-role="button" data-rel="back">閉じる</a>
+      </div>
+    </div>
+<script>
+    jQuery(function() {
+	jQuery.mobile.showPageLoadingMsg();
+	jQuery('#submit').attr('disabled', "disabled");
+    });
+
+    jQuery(document).delegate('#mainPage', 'pageinit', function() {
+	get_area();
+	get_categories();
+    });
+</script>
+  </body>
+</html>
