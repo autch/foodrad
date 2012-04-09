@@ -32,6 +32,25 @@ function get_area() {
     });
 }
 
+function get_loaded_csvs() {
+    jQuery.getJSON('latest_csvs.php?callback=?', function(results){ 
+	var ul = jQuery('#csvs');
+	ul.empty();
+	for(var i = 0; i < results.length; i++) {
+	    var item = results[i];
+
+	    var li = jQuery("<li>");
+	    var caption = item['csv_filename'];
+	    var anchor = jQuery("<a>");
+	    anchor.attr("href", "http://oku.edu.mie-u.ac.jp/~okumura/stat/data/mhlw/" +
+			item['csv_filename']).text(caption).appendTo(li);
+	    li.append(jQuery('<span class="ui-li-count">').text(item['count']));
+	    ul.append(li);
+	}
+	jQuery("#csvs").listview("refresh");
+    });
+}
+
 function get_categories() {
     jQuery.getJSON('categories.php?callback=?', function(result) {
 	categories = result;

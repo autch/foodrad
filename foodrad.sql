@@ -40,3 +40,5 @@ CREATE INDEX foodrad_i131 ON foodrad (i131_nd, i131);
 CREATE INDEX foodrad_cs134 ON foodrad (cs134_nd, cs134);
 CREATE INDEX foodrad_cs137 ON foodrad (cs137_nd, cs137);
 CREATE INDEX foodrad_cs_total1 ON foodrad (cs_total_nd, cs_total);
+CREATE INDEX foodrad_csv_filename ON foodrad (csv_filename);
+

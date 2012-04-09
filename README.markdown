@@ -12,8 +12,10 @@
 基本的に Debian squeeze のパッケージで揃います。
 
 - Ruby 1.9.2 くらい
+  - MySQL/Ruby http://www.tmtm.org/mysql/ruby/
 - MySQL 5.1 くらい
 - PHP 5.3 くらい
+  - mysqli 拡張
 - PHP が動く Web サーバ
 
 
@@ -29,7 +31,10 @@
 
     foodrad/		チェックアウトしたディレクトリ
     |
+    +-- data/		CSV ファイルをダウンロードするディレクトリ
     +-- www/		Web サーバで公開するディレクトリ
+
+data ディレクトリがないときは作っておきます。
 
 
 ### DB の準備
@@ -55,7 +60,8 @@ foodrad.sql ファイルを MySQL で実行します。ユーザや DB 名は適
 
 チェックアウトしたディレクトリにある csv2db.rb を開き、
 DBCONFIG_FILENAME という行を検索します。この値をさっき作った
-foodrad.json へのフルパスにします。
+foodrad.json へのフルパスにします。update_db.rb にも同じ行があるので修
+正します。
 
     DBCONFIG_FILENAME = "/path/to/foodrad.json"
 
@@ -91,6 +97,12 @@ csv2db.rb を、新しい CSV ファイルを引数にして実行します。
 
 例外が出ないのに複数回実行するとデータがダブります。DB に csv_filename
 という列があるのでこれを使って整理することができます。
+
+同様のことを自動的に行う update_db.rb というスクリプトがあります。この
+スクリプトと同じディレクトリに data というディレクトリを作り、cron ジョ
+ブとして登録すれば自動的に CSV ファイルをダウンロードして DB に変換でき
+ます。
+
 
 ## ソースについて
 

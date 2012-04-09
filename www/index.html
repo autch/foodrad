@@ -18,9 +18,7 @@
 	<h1>食品の放射能データ検索もどき（実験）</h1>
       </div><!-- /header -->
       <div data-role="content">	
-	<p>元ネタは <a href="http://oku.edu.mie-u.ac.jp/food/">食品の放射能データ検索もどき（実験）</a></p>
-	<p><a href="http://oku.edu.mie-u.ac.jp/~okumura/stat/data/mhlw/">http://oku.edu.mie-u.ac.jp/~okumura/stat/data/mhlw/</a> から 349～360.csv, a357～a360.csv を結合したものを使っています。</p>
-	<p>この検索エンジンのすべてのソースコードは <a href="https://github.com/autch/foodrad">GitHub</a> にあります。</p>
+	<p><a data-role="button" href="#csvlistPage">このページについて</a></p>
 
 	<form method="post" action="#resultPage" data-ajax="false" onsubmit="return on_submit();">
 	  <fieldset>
@@ -46,7 +44,6 @@
 		<option value="">すべて</option>
 	      </select>
 	    </div>
-            <input type="hidden" id="I131" name="I131" value="0"/>
 	    <div data-role="fieldcontain">
 	      <label for="cs_total">Cs-134+137 <input id="cs_total" name="cs_total" value="100" /> Bq/kg 以上</label>
 	    </div>
@@ -98,6 +95,23 @@
 	</table>
       </div>
     </div>
+
+    <div id="csvlistPage" data-role="page">
+      <div data-role="header">
+	<a href="#mainPage" data-icon="back" data-direction="reverse" class="ui-btn-left jqm-back">戻る</a>
+	<h1>このページについて</h1>
+      </div><!-- /header -->
+
+      <div data-role="content">	
+	<p>この検索エンジンは、厚生労働省の <a href="http://www.maff.go.jp/noutiku_eikyo/mhlw3.html">食品中の放射性物質の検査結果について</a> を <a href="http://oku.edu.mie-u.ac.jp/~okumura/stat/data/mhlw/">三重大の奥村晴彦教授が CSV 化したもの</a> を DB に取り込んだものです。</p>
+	<p>奥村教授のオリジナル版検索エンジンは <a href="http://oku.edu.mie-u.ac.jp/food/">食品の放射能データ検索もどき（実験）</a> です。</p>
+	<p>この検索エンジンのすべてのソースコードは <a href="https://github.com/autch/foodrad">GitHub</a> にあり、誰でも検索エンジンを改良したり、同じ物を自分のサーバに設置したりすることができます。</p>
+
+	<p>以下の CSV ファイルが DB に読み込まれています。数字は検査結果の件数です。</p>
+	<ul data-role="listview" data-inset="true" class="dynamic-list" id="csvs">
+	</ul>
+      </div>
+    </div>
 <script>
     jQuery(function() {
 	jQuery.mobile.showPageLoadingMsg();
@@ -107,6 +121,9 @@
     jQuery(document).delegate('#mainPage', 'pageinit', function() {
 	get_area();
 	get_categories();
+    });
+    jQuery(document).delegate('#csvlistPage', 'pageinit', function() {
+        get_loaded_csvs();
     });
 </script>
   </body>

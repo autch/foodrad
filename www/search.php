@@ -1,4 +1,17 @@
 <?php
+# 検査結果データの検索
+#
+# 検査結果データを指定のキーワード等で検索し、結果を JSON で返す
+#
+# home_pref: 産地の都道府県。前方一致
+# category: 食品カテゴリ。前方一致
+# item_name: 品目。前方一致
+# cs_total: Cs134+137, 0 を指定すると ND も検索する 
+#
+# callback([ {結果}, {結果}, {結果}, ... ]) 
+#
+# {結果} ハッシュのキーと意味は foodrad.sql を参照。
+#
 
 require_once 'db.inc.php';
 require_once 'jsonp.inc.php';

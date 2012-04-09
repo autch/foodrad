@@ -1,10 +1,9 @@
 <?php
-# 都道府県リストの JSON を返す。
+# DB に入っている CSV ファイル名のリストを返す。
 #
 # callback([
-#   { "home_pref": "北海道", /* 都道府県名。CSV に現れる名前なので
-#                               全部で 47 個というわけではない */
-#     "count": 100           /* この都道府県名でマッチした検査結果の総数  */
+#   { "csv_filename": "a361.csv", /* CSV ファイル名 */
+#     "count": 100           /* このファイル名で DB に入っている検査結果の総数 */
 #   },
 #   ...
 # ])
@@ -13,7 +12,7 @@
 require_once 'db.inc.php';
 require_once 'jsonp.inc.php';
 
-$sql = "SELECT home_pref, COUNT(*) AS count FROM foodrad GROUP BY home_pref ORDER BY home_pref";
+$sql = "SELECT csv_filename, COUNT(*) AS count FROM foodrad GROUP BY csv_filename ORDER BY csv_filename";
 
 $callback = get_jsonp_callback();
 
