@@ -8,5 +8,6 @@ else
   DATA_DIR="$1"
 fi
 
-exec wget -nv -P "$DATA_DIR" -p -c -r -l1 --remove-listing -np -L -nd -nH "$DATA_URL"
+rm -f "$DATA_DIR/index.html"
+exec wget -P "$DATA_DIR" -N -p -c -r -l1 --remove-listing -np -L -nd -nH "$DATA_URL"
 
